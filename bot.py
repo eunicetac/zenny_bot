@@ -33,44 +33,37 @@ def get_balance():
     return resp.json()["data"]
 
 def get_key_usage(api_key: str, days: int = 30):
-    """Fetch logs for a specific API key and sum up the cost."""
     now = datetime.now(timezone.utc)
     start = now - timedelta(days=days)
 
     total_cost = 0.0
     total_input_tokens = 0
     total_output_tokens = 0
-    page = 1
 
-    while True:
-        resp = requests.get(
-            "https://zenmux.ai/api/v1/management/logs",
-            headers={"Authorization": f"Bearer {ZENMUX_MANAGEMENT_API_KEY}"},
-            params={
-                "api_key": api_key,
-                "start_time": start.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "end_time": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "page": page,
-                "page_size": 100,
-            }
-        )
-        resp.raise_for_status()
-        data = resp.json()
+    resp = requests.get(
+        "https://zenmux.ai/api/v1/management/logs",
+        headers={"Authorization": f"Bearer {ZENMUX_MANAGEMENT_API_KEY}"},
+        params={
+            "api_key": api_key,
+            "start_time": start.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "end_time": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "page": 1,
+            "page_size": 100,
+        }
+    )
 
-        items = data.get("data", {}).get("items", [])
-        if not items:
-            break
+    # Debug: print what we actually got back
+    print(f"Status: {resp.status_code}")
+    print(f"Response: {resp.text[:500]}")
 
-        for item in items:
-            total_cost += item.get("cost", 0) or 0
-            total_input_tokens += item.get("input_tokens", 0) or 0
-            total_output_tokens += item.get("output_tokens", 0) or 0
+    resp.raise_for_status()
+    data = resp.json()
 
-        # Stop if we've reached the last page
-        total_pages = data.get("data", {}).get("total_pages", 1)
-        if page >= total_pages:
-            break
-        page += 1
+    items = data.get("data", {}).get("items", [])
+    for item in items:
+        total_cost += item.get("cost", 0) or 0
+        total_input_tokens += item.get("input_tokens", 0) or 0
+        total_output_tokens += item.get("output_tokens", 0) or 0
 
     return {
         "cost": total_cost,
