@@ -1,11 +1,20 @@
 import os
+import sys
 import requests
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
-ZENMUX_MGMT_KEY = os.environ["ZENMUX_MANAGEMENT_API_KEY"]
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
+ZENMUX_MANAGEMENT_API_KEY = os.environ.get("ZENMUX_MANAGEMENT_API_KEY")
 
+if not TELEGRAM_TOKEN:
+    print("ERROR: TELEGRAM_TOKEN is not set")
+    sys.exit(1)
+
+if not ZENMUX_MANAGEMENT_API_KEY:
+    print("ERROR: ZENMUX_MANAGEMENT_API_KEY is not set")
+    sys.exit(1)
+    
 def get_balance():
     resp = requests.get(
         "https://zenmux.ai/api/v1/management/payg/balance",
