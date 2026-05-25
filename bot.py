@@ -18,7 +18,7 @@ if not ZENMUX_MANAGEMENT_API_KEY:
 def get_balance():
     resp = requests.get(
         "https://zenmux.ai/api/v1/management/payg/balance",
-        headers={"Authorization": f"Bearer {ZENMUX_MGMT_KEY}"},
+        headers={"Authorization": f"Bearer {ZENMUX_MANAGEMENT_API_KEY}"},
     )
     resp.raise_for_status()
     return resp.json()["data"]
